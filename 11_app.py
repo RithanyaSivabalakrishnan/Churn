@@ -329,10 +329,12 @@ with tabs[2]:
     st.markdown("### Model Evaluation Results")
     if os.path.exists("eval_results.csv"):
         eval_df = pd.read_csv("eval_results.csv")
-        st.dataframe(eval_df.style.highlight_max(
-            subset=["Accuracy", "F1 Score", "ROC-AUC"],
-            color="#1e4d2b"
-        ), use_container_width=True)
+        col1, col2, col3 = st.columns(3)
+        rf_row = eval_df[eval_df.index.str.contains("Random Forest")].iloc[0]
+
+        col1.metric("Accuracy", f"{rf_row['Accuracy']:.3f}")
+        col2.metric("F1 Score", f"{rf_row['F1 Score']:.3f}")
+        col3.metric("ROC-AUC 🏆", f"{rf_row['ROC-AUC']:.3f}")
     else:
         st.info("Run `python 09_eval.py` to generate evaluation results.")
 
