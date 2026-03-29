@@ -1,5 +1,5 @@
 """
-Module 10: SHAP Explanations (FIXED for numpy arrays)
+Module 10: SHAP Explanations (FINAL FIX)
 ==============================
 Generates SHAP summary plot for the Random Forest model and prints the
 top 10 most influential features.
@@ -22,7 +22,6 @@ print("SHAP Explanations — Random Forest")
 print("=" * 60)
 
 # ── CRITICAL FIX: Convert numpy array to DataFrame ────────────────────────────
-# Load feature names (from 05_balance or 04_preprocess)
 try:
     feature_names = joblib.load("feature_names_clean.pkl")
 except:
@@ -33,7 +32,6 @@ X_test_df = pd.DataFrame(X_test, columns=feature_names)
 print(f"X_test converted to DataFrame: {X_test_df.shape}")
 
 # ── Compute SHAP values ───────────────────────────────────────────────────────
-# Use a sample of 500 records to keep runtime reasonable
 sample_size = min(500, len(X_test_df))
 X_sample = X_test_df.iloc[:sample_size]
 
@@ -56,10 +54,12 @@ plt.savefig("shap_summary.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("  ✔  Saved: shap_summary.png")
 
-# ── Top influencers ───────────────────────────────────────────────────────────
+# ── FIXED Top influencers ────────────────────────────────────────────────────
+# CRITICAL FIX: Ensure 1D array for pandas Series
+mean_abs_shap_values = np.abs(sv_class1).mean(axis=0)  # Shape: (n_features,)
 mean_abs_shap = pd.Series(
-    np.abs(sv_class1).mean(axis=0),
-    index=X_sample.columns,
+    mean_abs_shap_values,  # Now guaranteed 1D numpy array
+    index=X_sample.columns
 ).sort_values(ascending=False)
 
 print("\n  Top 10 Features by Mean |SHAP| Value:")
