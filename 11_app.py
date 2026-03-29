@@ -307,7 +307,7 @@ with tabs[1]:
     if available:
         for title, path in available.items():
             st.markdown(f"#### {title}")
-            st.image(path, width="100%")
+            st.image(path, width="stretch")
             st.markdown("---")
     else:
         st.warning("No EDA plots found. Run `python 02_eda.py` first.")
@@ -338,7 +338,7 @@ with tabs[2]:
 
     if os.path.exists("roc_curves.png"):
         st.image("roc_curves.png", caption="ROC Curves — Logistic Regression vs Random Forest",
-                 width="100%")
+                 width="stretch")
 
 # ═══════════════════════════════════════════════════════════════════
 # TAB 4 — About
