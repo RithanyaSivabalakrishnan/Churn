@@ -1,9 +1,15 @@
 """
-Module 11: Streamlit Customer Churn Prediction App - FEATURE 1
+Module 11: Streamlit Customer Churn Prediction App - FEATURE 2
 ===============================================================
-FEATURE 1 ADDITIONS:
+FEATURE 1 (Included):
 - ✅ KPI Dashboard with key metrics
-- ✅ Feature-wise Churn Analysis (Gender, Senior Citizen, Internet Service, Contract, Payment Method)
+- ✅ Feature-wise Churn Analysis
+
+FEATURE 2 ADDITIONS:
+- ✅ Enhanced Churn Probability Gauge with Risk Levels
+- ✅ Distribution Analysis (Tenure, Monthly Charges, Total Charges)
+- ✅ Box Plots for Charges vs Churn
+- ✅ Individual SHAP Waterfall Explanations
 
 Run with:  streamlit run 11_app.py
 """
@@ -33,7 +39,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Custom CSS
+# Custom CSS (Enhanced for Feature 2)
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -64,6 +70,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     color: black !important;
     background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
 }
+
 /* Main area */
 .stApp { background: #0f172a; color: #e2e8f0; }
 
@@ -77,9 +84,63 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
-/* Risk badge */
-.risk-high { background: linear-gradient(135deg,#c0392b,#e74c3c); border-radius:12px; padding:16px 24px; color:#fff; font-size:2rem; font-weight:700; text-align:center; }
-.risk-low  { background: linear-gradient(135deg,#1e8449,#27ae60); border-radius:12px; padding:16px 24px; color:#fff; font-size:2rem; font-weight:700; text-align:center; }
+/* FEATURE 2: Enhanced Risk badges */
+.risk-high { 
+    background: linear-gradient(135deg,#c0392b,#e74c3c); 
+    border-radius:12px; 
+    padding:20px 24px; 
+    color:#fff; 
+    font-size:2rem; 
+    font-weight:700; 
+    text-align:center;
+    box-shadow: 0 8px 16px rgba(231, 76, 60, 0.4);
+    margin: 20px 0;
+}
+.risk-medium {
+    background: linear-gradient(135deg,#d68910,#f39c12); 
+    border-radius:12px; 
+    padding:20px 24px; 
+    color:#fff; 
+    font-size:2rem; 
+    font-weight:700; 
+    text-align:center;
+    box-shadow: 0 8px 16px rgba(243, 156, 18, 0.4);
+    margin: 20px 0;
+}
+.risk-low  { 
+    background: linear-gradient(135deg,#1e8449,#27ae60); 
+    border-radius:12px; 
+    padding:20px 24px; 
+    color:#fff; 
+    font-size:2rem; 
+    font-weight:700; 
+    text-align:center;
+    box-shadow: 0 8px 16px rgba(39, 174, 96, 0.4);
+    margin: 20px 0;
+}
+
+/* Risk level boxes */
+.risk-box-high {
+    background: rgba(231, 76, 60, 0.1);
+    border-left: 4px solid #e74c3c;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+.risk-box-medium {
+    background: rgba(243, 156, 18, 0.1);
+    border-left: 4px solid #f39c12;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+.risk-box-low {
+    background: rgba(39, 174, 96, 0.1);
+    border-left: 4px solid #27ae60;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+}
 
 /* Section headers */
 .section-header { 
@@ -111,7 +172,7 @@ def load_artefacts():
 rf, scaler, feature_names, dummy_cols = load_artefacts()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Load dataset for analysis (NEW for Feature 1)
+# Load dataset for analysis
 # ─────────────────────────────────────────────────────────────────────────────
 @st.cache_data
 def load_dataset():
@@ -176,7 +237,7 @@ def build_input_df():
         "MonthlyCharges":   monthly_charges,
         "TotalCharges":     total_charges,
         "Tenure_Ratio":     tenure / max(monthly_charges, 1),
-        # Categorical dummies (match get_dummies on training set)
+        # Categorical dummies
         "gender_Male":              1 if gender == "Male" else 0,
         "Partner_Yes":              1 if partner == "Yes" else 0,
         "Dependents_Yes":           1 if dependents == "Yes" else 0,
@@ -219,12 +280,20 @@ def build_input_df():
     return row
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Main tabs (FEATURE 1: Added KPI Dashboard + Feature Analysis tabs)
+# Main tabs (FEATURE 2: Added Distribution Analysis tab)
 # ═══════════════════════════════════════════════════════════════════════════════
-tabs = st.tabs(["📊 KPI Dashboard", "🔮 Prediction", "📈 Feature Analysis", "📊 EDA", "🎯 Model Performance", "ℹ️ About"])
+tabs = st.tabs([
+    "📊 KPI Dashboard", 
+    "🔮 Prediction", 
+    "📈 Feature Analysis", 
+    "📉 Distribution Analysis",  # NEW in Feature 2
+    "📊 EDA", 
+    "🎯 Model Performance", 
+    "ℹ️ About"
+])
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 0 — KPI DASHBOARD (NEW!)
+# TAB 0 — KPI DASHBOARD (Feature 1)
 # ═══════════════════════════════════════════════════════════════════════════════
 with tabs[0]:
     st.markdown('<p class="section-header">📊 Key Performance Indicators</p>', unsafe_allow_html=True)
@@ -238,40 +307,20 @@ with tabs[0]:
         avg_tenure = df_analysis['tenure'].mean()
         avg_total_charges = df_analysis['TotalCharges'].mean()
         
-        # Display KPIs in columns
+        # Display KPIs
         col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
-            st.metric(
-                label="👥 Total Customers",
-                value=f"{total_customers:,}"
-            )
-        
+            st.metric("👥 Total Customers", f"{total_customers:,}")
         with col2:
-            st.metric(
-                label="📉 Churn Rate",
-                value=f"{churn_rate:.2f}%",
-                delta=f"{100-churn_rate:.2f}% Retained",
-                delta_color="inverse"
-            )
-        
+            st.metric("📉 Churn Rate", f"{churn_rate:.2f}%", 
+                     delta=f"{100-churn_rate:.2f}% Retained", delta_color="inverse")
         with col3:
-            st.metric(
-                label="💰 Avg Monthly Charges",
-                value=f"${avg_monthly_charges:.2f}"
-            )
-        
+            st.metric("💰 Avg Monthly Charges", f"${avg_monthly_charges:.2f}")
         with col4:
-            st.metric(
-                label="📅 Avg Tenure",
-                value=f"{avg_tenure:.1f} months"
-            )
-        
+            st.metric("📅 Avg Tenure", f"{avg_tenure:.1f} months")
         with col5:
-            st.metric(
-                label="💵 Avg Total Charges",
-                value=f"${avg_total_charges:.2f}"
-            )
+            st.metric("💵 Avg Total Charges", f"${avg_total_charges:.2f}")
         
         st.markdown("---")
         
@@ -281,7 +330,6 @@ with tabs[0]:
         col1, col2 = st.columns(2)
         
         with col1:
-            # Pie chart
             churn_counts = df_analysis['Churn'].value_counts()
             fig = go.Figure(data=[go.Pie(
                 labels=['Retained', 'Churned'],
@@ -301,7 +349,6 @@ with tabs[0]:
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
-            # Bar chart
             fig = go.Figure(data=[
                 go.Bar(
                     x=['Retained', 'Churned'],
@@ -349,7 +396,7 @@ with tabs[0]:
         st.warning("Dataset not found. Upload 'WA_Fn-UseC_-Telco-Customer-Churn.csv' to see KPIs.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 1 — PREDICTION (Original with enhancements)
+# TAB 1 — PREDICTION (FEATURE 2: Enhanced with Risk Gauge & Individual SHAP)
 # ═══════════════════════════════════════════════════════════════════════════════
 with tabs[1]:
     st.markdown('<p class="section-header">🔮 Churn Risk Prediction</p>', unsafe_allow_html=True)
@@ -364,27 +411,141 @@ with tabs[1]:
 
             churn_pct = y_proba * 100
 
-            # Visual result display
-            if y_pred == 1:
-                st.markdown(f"""
-                <div class="risk-high">
-                    ⚠️ HIGH CHURN RISK · {churn_pct:.1f}%
-                </div>
-                """, unsafe_allow_html=True)
-                st.error("**Recommendation:** Immediate retention strategy required!")
-            else:
-                st.markdown(f"""
-                <div class="risk-low">
-                    ✅ LOW CHURN RISK · {churn_pct:.1f}%
-                </div>
-                """, unsafe_allow_html=True)
-                st.success("**Status:** Customer is likely to remain loyal.")
+            # ========= FEATURE 2: ENHANCED RISK GAUGE =========
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                # Create interactive gauge chart
+                fig = go.Figure(go.Indicator(
+                    mode = "gauge+number+delta",
+                    value = churn_pct,
+                    domain = {'x': [0, 1], 'y': [0, 1]},
+                    title = {'text': "Churn Probability", 'font': {'size': 28, 'color': '#e2e8f0'}},
+                    delta = {'reference': 50, 'increasing': {'color': "#e74c3c"}, 'decreasing': {'color': "#2ecc71"}},
+                    number = {'suffix': "%", 'font': {'size': 48, 'color': '#e2e8f0'}},
+                    gauge = {
+                        'axis': {'range': [None, 100], 'tickwidth': 2, 'tickcolor': "#64748b"},
+                        'bar': {'color': "#1e40af"},
+                        'bgcolor': "rgba(30, 58, 95, 0.3)",
+                        'borderwidth': 2,
+                        'bordercolor': "#64748b",
+                        'steps': [
+                            {'range': [0, 30], 'color': 'rgba(39, 174, 96, 0.3)'},
+                            {'range': [30, 70], 'color': 'rgba(243, 156, 18, 0.3)'},
+                            {'range': [70, 100], 'color': 'rgba(231, 76, 60, 0.3)'}
+                        ],
+                        'threshold': {
+                            'line': {'color': "white", 'width': 4},
+                            'thickness': 0.85,
+                            'value': churn_pct
+                        }
+                    }
+                ))
+                
+                fig.update_layout(
+                    height=450,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font={'color': "#e2e8f0", 'family': "Inter"}
+                )
+                
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.markdown("<br>", unsafe_allow_html=True)
+                
+                # Prediction status
+                if y_pred == 1:
+                    st.markdown("""
+                        <div style='background-color: rgba(231, 76, 60, 0.15); 
+                                    border: 2px solid #e74c3c;
+                                    color: #e74c3c; padding: 20px; 
+                                    border-radius: 10px; text-align: center;'>
+                            <h2 style='color: #e74c3c;'>⚠️ CHURN ALERT</h2>
+                            <h3 style='color: #e74c3c;'>Customer Likely to Leave</h3>
+                        </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                        <div style='background-color: rgba(39, 174, 96, 0.15); 
+                                    border: 2px solid #2ecc71;
+                                    color: #2ecc71; padding: 20px; 
+                                    border-radius: 10px; text-align: center;'>
+                            <h2 style='color: #2ecc71;'>✅ RETENTION</h2>
+                            <h3 style='color: #2ecc71;'>Customer Likely to Stay</h3>
+                        </div>
+                    """, unsafe_allow_html=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                st.metric("Churn Probability", f"{churn_pct:.2f}%")
+                st.progress(churn_pct / 100)
 
+            # ========= FEATURE 2: DETAILED RISK LEVEL ASSESSMENT =========
             st.markdown("---")
+            st.markdown('<p class="section-header">🎯 Risk Level Assessment</p>', unsafe_allow_html=True)
+            
+            if churn_pct < 30:
+                st.markdown('<div class="risk-low">🟢 LOW RISK (0-30%)</div>', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.success("**Status:** Healthy Customer")
+                with col2:
+                    st.success("**Action:** Monitor regularly")
+                with col3:
+                    st.success("**Priority:** Low")
+                
+                st.markdown("""
+                <div class="risk-box-low">
+                    <strong>Analysis:</strong><br>
+                    This customer shows strong retention indicators. They are highly likely to remain with the service.  
+                    Continue providing excellent service and consider them for loyalty rewards programs.
+                </div>
+                """, unsafe_allow_html=True)
+                
+            elif churn_pct < 70:
+                st.markdown('<div class="risk-medium">🟡 MEDIUM RISK (30-70%)</div>', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.warning("**Status:** At-Risk Customer")
+                with col2:
+                    st.warning("**Action:** Proactive engagement")
+                with col3:
+                    st.warning("**Priority:** Medium")
+                
+                st.markdown("""
+                <div class="risk-box-medium">
+                    <strong>Analysis:</strong><br>
+                    This customer shows mixed signals and requires attention. Early intervention can prevent churn.  
+                    Consider reaching out with personalized offers or service improvements.
+                </div>
+                """, unsafe_allow_html=True)
+                
+            else:
+                st.markdown('<div class="risk-high">🔴 HIGH RISK (70-100%)</div>', unsafe_allow_html=True)
+                
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.error("**Status:** Critical Risk")
+                with col2:
+                    st.error("**Action:** Immediate intervention")
+                with col3:
+                    st.error("**Priority:** URGENT")
+                
+                st.markdown("""
+                <div class="risk-box-high">
+                    <strong>Analysis:</strong><br>
+                    This customer is highly likely to churn. Immediate action is required to retain them.  
+                    Deploy your retention team and offer significant incentives or service improvements.
+                </div>
+                """, unsafe_allow_html=True)
 
-            # SHAP explanation for THIS prediction
-            st.markdown("### 🔍 Why This Prediction?")
-            st.write("Top factors influencing this customer's churn risk:")
+            # ========= FEATURE 2: INDIVIDUAL SHAP WATERFALL PLOT =========
+            st.markdown("---")
+            st.markdown('<p class="section-header">🔍 Why This Customer? (Individual SHAP Explanation)</p>', unsafe_allow_html=True)
+            st.write("Top factors influencing **THIS specific customer's** churn risk:")
             
             try:
                 explainer = shap.TreeExplainer(rf)
@@ -397,7 +558,7 @@ with tabs[1]:
                     shap_vals_churn = shap_vals[:, :, 1]
                 
                 # Create waterfall plot
-                fig_shap, ax_shap = plt.subplots(figsize=(10, 6), facecolor='#0f172a')
+                fig_shap, ax_shap = plt.subplots(figsize=(12, 7), facecolor='#0f172a')
                 shap.waterfall_plot(
                     shap.Explanation(
                         values=shap_vals_churn[0],
@@ -406,46 +567,61 @@ with tabs[1]:
                         data=input_row.iloc[0],
                         feature_names=input_row.columns.tolist()
                     ),
-                    max_display=10,
+                    max_display=15,
                     show=False
                 )
                 ax_shap.set_facecolor('#0f172a')
+                # Update text colors
                 for text in ax_shap.texts:
                     text.set_color('#e2e8f0')
+                for spine in ax_shap.spines.values():
+                    spine.set_edgecolor('#64748b')
+                ax_shap.tick_params(colors='#e2e8f0')
                 st.pyplot(fig_shap)
                 plt.close()
                 
+                st.info("""
+                **How to read this chart:**
+                - Features pushing the probability **up** (towards churn) are shown in red
+                - Features pushing the probability **down** (towards retention) are shown in blue
+                - The base value is the average churn probability across all customers
+                - Each feature adds or subtracts from this base value to arrive at the final prediction
+                """)
+                
             except Exception as e:
-                st.info(f"SHAP visualization not available: {e}")
+                st.warning(f"Individual SHAP explanation not available: {e}")
 
             # Actionable recommendations
             st.markdown("---")
-            st.markdown("### 💡 Recommended Actions")
+            st.markdown('<p class="section-header">💡 Recommended Actions</p>', unsafe_allow_html=True)
             
             if y_pred == 1:
                 col1, col2 = st.columns(2)
                 with col1:
                     st.markdown("**🎯 Immediate Actions:**")
-                    st.write("- 📞 Priority retention call within 24 hours")
-                    st.write("- 🎁 Special discount offer (15-30%)")
-                    st.write("- 📧 Personalized email campaign")
+                    st.write("- 📞 Priority retention call within 24-48 hours")
+                    st.write("- 🎁 Special discount offer (15-30% for 3 months)")
+                    st.write("- 📧 Personalized email addressing concerns")
+                    st.write("- 🔄 Offer contract upgrade with benefits")
                 with col2:
                     st.markdown("**📋 Long-term Strategy:**")
-                    st.write("- 💬 Customer feedback session")
-                    st.write("- 🎁 Enroll in loyalty program")
-                    st.write("- 🔄 Contract upgrade incentive")
+                    st.write("- 💬 Schedule customer feedback session")
+                    st.write("- 🎁 Enroll in VIP loyalty program")
+                    st.write("- 📊 Quarterly account review meetings")
+                    st.write("- 🌟 Premium support access")
             else:
                 st.success("""
                 **Continue providing excellent service:**
                 - Send quarterly satisfaction surveys
-                - Offer loyalty rewards
-                - Keep informed about new features
+                - Offer loyalty rewards for long-term customers
+                - Keep them informed about new features and benefits
+                - Consider them for beta testing new services
                 """)
     else:
         st.info("👈 Adjust customer details in the sidebar and click '🔮 Predict Churn Risk'")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 2 — FEATURE ANALYSIS (NEW!)
+# TAB 2 — FEATURE ANALYSIS (Feature 1)
 # ═══════════════════════════════════════════════════════════════════════════════
 with tabs[2]:
     st.markdown('<p class="section-header">📈 Feature-wise Churn Analysis</p>', unsafe_allow_html=True)
@@ -453,7 +629,6 @@ with tabs[2]:
     if df_analysis is not None:
         st.write("Analyze how different customer segments impact churn rates")
         
-        # Helper function to create churn comparison charts
         def plot_churn_by_feature(df, feature_name, title):
             churn_data = df.groupby([feature_name, 'Churn']).size().unstack(fill_value=0)
             churn_pct = churn_data.div(churn_data.sum(axis=1), axis=0) * 100
@@ -489,92 +664,72 @@ with tabs[2]:
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='#e2e8f0'),
-                legend=dict(
-                    orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="right",
-                    x=1
-                )
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
             )
             
-            return fig, churn_pct
+            return fig
         
-        # 1. Gender vs Churn
+        # Gender vs Churn
         st.markdown("### 👥 Gender vs Churn")
         col1, col2 = st.columns([2, 1])
-        
         with col1:
-            fig, _ = plot_churn_by_feature(df_analysis, 'gender', 'Churn Rate by Gender')
+            fig = plot_churn_by_feature(df_analysis, 'gender', 'Churn Rate by Gender')
             st.plotly_chart(fig, use_container_width=True)
-        
         with col2:
             st.markdown("**Insights:**")
             for gen in df_analysis['gender'].unique():
                 churn_rate = (df_analysis[df_analysis['gender'] == gen]['Churn'] == 'Yes').mean() * 100
                 st.metric(f"{gen} Churn", f"{churn_rate:.2f}%")
-        
         st.markdown("---")
         
-        # 2. Senior Citizen vs Churn
+        # Senior Citizen vs Churn
         st.markdown("### 👴 Senior Citizen vs Churn")
         col1, col2 = st.columns([2, 1])
-        
         with col1:
             df_temp = df_analysis.copy()
             df_temp['SeniorCitizen'] = df_temp['SeniorCitizen'].map({0: 'No', 1: 'Yes'})
-            fig, _ = plot_churn_by_feature(df_temp, 'SeniorCitizen', 'Churn Rate by Senior Citizen Status')
+            fig = plot_churn_by_feature(df_temp, 'SeniorCitizen', 'Churn Rate by Senior Citizen Status')
             st.plotly_chart(fig, use_container_width=True)
-        
         with col2:
             st.markdown("**Insights:**")
             for status in [0, 1]:
                 label = "Senior" if status == 1 else "Non-Senior"
                 churn_rate = (df_analysis[df_analysis['SeniorCitizen'] == status]['Churn'] == 'Yes').mean() * 100
                 st.metric(f"{label}", f"{churn_rate:.2f}%")
-        
         st.markdown("---")
         
-        # 3. Internet Service vs Churn
+        # Internet Service vs Churn
         st.markdown("### 🌐 Internet Service vs Churn")
         col1, col2 = st.columns([2, 1])
-        
         with col1:
-            fig, _ = plot_churn_by_feature(df_analysis, 'InternetService', 'Churn Rate by Internet Service Type')
+            fig = plot_churn_by_feature(df_analysis, 'InternetService', 'Churn Rate by Internet Service Type')
             st.plotly_chart(fig, use_container_width=True)
-        
         with col2:
             st.markdown("**Insights:**")
             for service in df_analysis['InternetService'].unique():
                 churn_rate = (df_analysis[df_analysis['InternetService'] == service]['Churn'] == 'Yes').mean() * 100
                 st.metric(f"{service}", f"{churn_rate:.2f}%")
-        
         st.markdown("---")
         
-        # 4. Contract Type vs Churn
+        # Contract Type vs Churn
         st.markdown("### 📝 Contract Type vs Churn")
         col1, col2 = st.columns([2, 1])
-        
         with col1:
-            fig, _ = plot_churn_by_feature(df_analysis, 'Contract', 'Churn Rate by Contract Type')
+            fig = plot_churn_by_feature(df_analysis, 'Contract', 'Churn Rate by Contract Type')
             st.plotly_chart(fig, use_container_width=True)
-        
         with col2:
             st.markdown("**Insights:**")
             for cont in df_analysis['Contract'].unique():
                 churn_rate = (df_analysis[df_analysis['Contract'] == cont]['Churn'] == 'Yes').mean() * 100
                 st.metric(f"{cont}", f"{churn_rate:.2f}%")
-        
         st.markdown("---")
         
-        # 5. Payment Method vs Churn
+        # Payment Method vs Churn
         st.markdown("### 💳 Payment Method vs Churn")
         col1, col2 = st.columns([2, 1])
-        
         with col1:
-            fig, _ = plot_churn_by_feature(df_analysis, 'PaymentMethod', 'Churn Rate by Payment Method')
+            fig = plot_churn_by_feature(df_analysis, 'PaymentMethod', 'Churn Rate by Payment Method')
             st.plotly_chart(fig, use_container_width=True)
-        
         with col2:
             st.markdown("**Top Churn Rates:**")
             payment_churn = df_analysis.groupby('PaymentMethod')['Churn'].apply(
@@ -582,14 +737,11 @@ with tabs[2]:
             ).sort_values(ascending=False)
             for payment, rate in payment_churn.items():
                 st.write(f"**{payment}:** {rate:.1f}%")
-        
         st.markdown("---")
         
-        # Key Findings Summary
-        st.markdown("### 🎯 Key Findings")
-        
+        # Key Findings
+        st.markdown('<p class="section-header">🎯 Key Findings</p>', unsafe_allow_html=True)
         col1, col2 = st.columns(2)
-        
         with col1:
             st.success("""
             **Lowest Churn Segments:**
@@ -598,7 +750,6 @@ with tabs[2]:
             - Automatic payment users (Bank/Credit Card)
             - Long-tenure customers (>24 months)
             """)
-        
         with col2:
             st.error("""
             **Highest Churn Segments:**
@@ -612,9 +763,231 @@ with tabs[2]:
         st.warning("Dataset not available for feature analysis.")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 3 — EDA (Original)
+# TAB 3 — DISTRIBUTION ANALYSIS (NEW IN FEATURE 2!)
 # ═══════════════════════════════════════════════════════════════════════════════
 with tabs[3]:
+    st.markdown('<p class="section-header">📉 Distribution Analysis</p>', unsafe_allow_html=True)
+    st.write("Understand how key metrics are distributed across churned and retained customers")
+    
+    if df_analysis is not None:
+        
+        # ========= TENURE DISTRIBUTION =========
+        st.markdown("### 📅 Tenure Distribution")
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            fig = px.histogram(
+                df_analysis,
+                x='tenure',
+                color='Churn',
+                barmode='overlay',
+                nbins=50,
+                title='Customer Tenure Distribution by Churn Status',
+                color_discrete_map={'Yes': '#e74c3c', 'No': '#2ecc71'},
+                opacity=0.7,
+                labels={'tenure': 'Tenure (months)', 'count': 'Number of Customers'}
+            )
+            fig.update_layout(
+                height=450,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#e2e8f0')
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("**Key Insights:**")
+            churned_tenure = df_analysis[df_analysis['Churn'] == 'Yes']['tenure'].mean()
+            retained_tenure = df_analysis[df_analysis['Churn'] == 'No']['tenure'].mean()
+            st.metric("Churned Avg", f"{churned_tenure:.1f} mo")
+            st.metric("Retained Avg", f"{retained_tenure:.1f} mo")
+            diff = retained_tenure - churned_tenure
+            st.metric("Difference", f"+{diff:.1f} mo")
+            
+            st.info(f"""
+            **Finding:** Customers who stay have **{diff:.1f} months** longer tenure on average.
+            Early-stage customers (<6 months) are highest risk.
+            """)
+        
+        st.markdown("---")
+        
+        # ========= MONTHLY CHARGES BOX PLOT =========
+        st.markdown("### 💰 Monthly Charges vs Churn")
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            fig = px.box(
+                df_analysis,
+                x='Churn',
+                y='MonthlyCharges',
+                color='Churn',
+                title='Monthly Charges Distribution by Churn Status',
+                color_discrete_map={'Yes': '#e74c3c', 'No': '#2ecc71'},
+                labels={'MonthlyCharges': 'Monthly Charges ($)', 'Churn': 'Customer Status'}
+            )
+            fig.update_layout(
+                height=450,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#e2e8f0'),
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("**Key Insights:**")
+            churned_charges = df_analysis[df_analysis['Churn'] == 'Yes']['MonthlyCharges'].mean()
+            retained_charges = df_analysis[df_analysis['Churn'] == 'No']['MonthlyCharges'].mean()
+            st.metric("Churned Avg", f"${churned_charges:.2f}")
+            st.metric("Retained Avg", f"${retained_charges:.2f}")
+            diff_charges = churned_charges - retained_charges
+            st.metric("Difference", f"+${diff_charges:.2f}")
+            
+            st.warning(f"""
+            **Finding:** Churned customers pay **${diff_charges:.2f}** more on average per month.
+            Higher charges correlate with churn - possible pricing sensitivity.
+            """)
+        
+        st.markdown("---")
+        
+        # ========= TOTAL CHARGES DISTRIBUTION =========
+        st.markdown("### 💵 Total Charges Distribution")
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            fig = px.histogram(
+                df_analysis,
+                x='TotalCharges',
+                color='Churn',
+                barmode='overlay',
+                nbins=50,
+                title='Total Charges Distribution by Churn Status',
+                color_discrete_map={'Yes': '#e74c3c', 'No': '#2ecc71'},
+                opacity=0.7,
+                labels={'TotalCharges': 'Total Charges ($)', 'count': 'Number of Customers'}
+            )
+            fig.update_layout(
+                height=450,
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font=dict(color='#e2e8f0')
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with col2:
+            st.markdown("**Key Insights:**")
+            churned_total = df_analysis[df_analysis['Churn'] == 'Yes']['TotalCharges'].mean()
+            retained_total = df_analysis[df_analysis['Churn'] == 'No']['TotalCharges'].mean()
+            st.metric("Churned Avg", f"${churned_total:.2f}")
+            st.metric("Retained Avg", f"${retained_total:.2f}")
+            
+            st.success(f"""
+            **Finding:** Retained customers have **${retained_total - churned_total:.2f}** higher total spend.
+            This reflects their longer tenure and loyalty.
+            """)
+        
+        st.markdown("---")
+        
+        # ========= COMPARATIVE BOX PLOTS =========
+        st.markdown("### 📊 Comparative Box Plots - All Metrics")
+        
+        # Create subplots
+        fig = make_subplots(
+            rows=1, cols=3,
+            subplot_titles=('Tenure', 'Monthly Charges', 'Total Charges')
+        )
+        
+        # Tenure box plot
+        for churn_status in ['No', 'Yes']:
+            color = '#2ecc71' if churn_status == 'No' else '#e74c3c'
+            fig.add_trace(
+                go.Box(
+                    y=df_analysis[df_analysis['Churn'] == churn_status]['tenure'],
+                    name=churn_status,
+                    marker_color=color,
+                    showlegend=True
+                ),
+                row=1, col=1
+            )
+        
+        # Monthly Charges box plot
+        for churn_status in ['No', 'Yes']:
+            color = '#2ecc71' if churn_status == 'No' else '#e74c3c'
+            fig.add_trace(
+                go.Box(
+                    y=df_analysis[df_analysis['Churn'] == churn_status]['MonthlyCharges'],
+                    name=churn_status,
+                    marker_color=color,
+                    showlegend=False
+                ),
+                row=1, col=2
+            )
+        
+        # Total Charges box plot
+        for churn_status in ['No', 'Yes']:
+            color = '#2ecc71' if churn_status == 'No' else '#e74c3c'
+            fig.add_trace(
+                go.Box(
+                    y=df_analysis[df_analysis['Churn'] == churn_status]['TotalCharges'],
+                    name=churn_status,
+                    marker_color=color,
+                    showlegend=False
+                ),
+                row=1, col=3
+            )
+        
+        fig.update_layout(
+            height=500,
+            showlegend=True,
+            legend=dict(title="Churn Status", x=0.5, y=-0.15, orientation='h'),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#e2e8f0')
+        )
+        
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(showgrid=True, gridcolor='rgba(100, 116, 139, 0.2)')
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Summary statistics table
+        st.markdown("---")
+        st.markdown('<p class="section-header">📈 Summary Statistics</p>', unsafe_allow_html=True)
+        
+        summary_data = {
+            'Metric': ['Tenure (months)', 'Monthly Charges ($)', 'Total Charges ($)'],
+            'Churned - Mean': [
+                f"{df_analysis[df_analysis['Churn'] == 'Yes']['tenure'].mean():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'Yes']['MonthlyCharges'].mean():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'Yes']['TotalCharges'].mean():.2f}"
+            ],
+            'Retained - Mean': [
+                f"{df_analysis[df_analysis['Churn'] == 'No']['tenure'].mean():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'No']['MonthlyCharges'].mean():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'No']['TotalCharges'].mean():.2f}"
+            ],
+            'Churned - Median': [
+                f"{df_analysis[df_analysis['Churn'] == 'Yes']['tenure'].median():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'Yes']['MonthlyCharges'].median():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'Yes']['TotalCharges'].median():.2f}"
+            ],
+            'Retained - Median': [
+                f"{df_analysis[df_analysis['Churn'] == 'No']['tenure'].median():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'No']['MonthlyCharges'].median():.2f}",
+                f"{df_analysis[df_analysis['Churn'] == 'No']['TotalCharges'].median():.2f}"
+            ]
+        }
+        
+        summary_df = pd.DataFrame(summary_data)
+        st.dataframe(summary_df, use_container_width=True)
+        
+    else:
+        st.warning("Dataset not available for distribution analysis.")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TAB 4 — EDA (Original)
+# ═══════════════════════════════════════════════════════════════════════════════
+with tabs[4]:
     st.markdown("### Exploratory Data Analysis")
 
     eda_plots = {
@@ -638,7 +1011,6 @@ with tabs[3]:
     else:
         st.warning("No EDA plots found. Run `python 02_eda.py` first.")
 
-    # Live dataset stats if CSV present
     if df_analysis is not None:
         st.markdown("### Live Dataset Statistics")
         c1, c2, c3, c4 = st.columns(4)
@@ -648,19 +1020,15 @@ with tabs[3]:
         c4.metric("Features", str(df_analysis.shape[1] - 1))
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 4 — Model Performance (Original)
+# TAB 5 — Model Performance (Original)
 # ═══════════════════════════════════════════════════════════════════════════════
-with tabs[4]:
+with tabs[5]:
     st.markdown("### 📊 Model Evaluation Results")
     
-    # Key Metrics Table
     if os.path.exists("eval_results.csv"):
         eval_df = pd.read_csv("eval_results.csv")
-        
-        # Select only key columns
         metrics_df = eval_df[['Model', 'Accuracy', 'F1 Score', 'ROC-AUC']].copy()
         
-        # Beautified table
         st.dataframe(
             metrics_df.style
             .format({'Accuracy': '{:.3f}', 'F1 Score': '{:.3f}', 'ROC-AUC': '{:.3f}'})
@@ -673,10 +1041,8 @@ with tabs[4]:
             use_container_width=True
         )
         
-        # Best model badge
         best_idx = metrics_df['ROC-AUC'].idxmax()
         st.success(f"🏆 **Top Model:** {metrics_df.iloc[best_idx]['Model']} | AUC: {metrics_df.iloc[best_idx]['ROC-AUC']:.3f}")
-        
     else:
         st.warning("🔄 Run `python 09_eval.py` to generate results")
 
@@ -688,8 +1054,6 @@ with tabs[4]:
     
     if os.path.exists("eval_results.csv"):
         eval_df = pd.read_csv("eval_results.csv")
-        
-        # Extract model rows
         logreg_row = eval_df[eval_df['Model'].str.contains('Logistic', na=False)].iloc[0]
         rf_row = eval_df[eval_df['Model'].str.contains('Random|Forest', na=False, regex=True)].iloc[0]
         
@@ -702,12 +1066,10 @@ with tabs[4]:
         
         cm_logreg = get_confusion_matrix(logreg_row)
         cm_rf = get_confusion_matrix(rf_row)
-        
     else:
         cm_logreg = np.array([[4125, 475], [925, 1445]])
         cm_rf = np.array([[4280, 320], [675, 1695]])
     
-    # LogReg Matrix
     with col1:
         st.markdown("**Logistic Regression**")
         fig_log, ax_log = plt.subplots(figsize=(5, 4), facecolor='#0f172a')
@@ -722,7 +1084,6 @@ with tabs[4]:
         st.pyplot(fig_log)
         plt.close()
     
-    # RF Matrix
     with col2:
         st.markdown("**Random Forest**")
         fig_rf, ax_rf = plt.subplots(figsize=(5, 4), facecolor='#0f172a')
@@ -739,7 +1100,6 @@ with tabs[4]:
 
     st.markdown("---")
 
-    # ROC Curve
     st.markdown("### 📈 ROC Curves Comparison")
     if os.path.exists("roc_curves.png"):
         st.image("roc_curves.png", caption="ROC Curves", width=700)
@@ -747,20 +1107,14 @@ with tabs[4]:
         st.info("Run `python 09_eval.py` for ROC curves")
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# TAB 5 — About (Original)
+# TAB 6 — About (Updated for Feature 2)
 # ═══════════════════════════════════════════════════════════════════════════════
-with tabs[5]:
+with tabs[6]:
     st.markdown("""
     ### About This App
 
     This interactive dashboard demonstrates an end-to-end **Customer Churn Prediction** pipeline
     built for the Telco Customer dataset from IBM.
-    
-    **FEATURE 1 Enhancements:**
-    - ✅ KPI Dashboard with 5 key metrics
-    - ✅ Feature-wise Churn Analysis (Gender, Senior Citizen, Internet Service, Contract, Payment Method)
-    - ✅ Visual insights with interactive Plotly charts
-    - ✅ Revenue at risk calculations
 
     | Component | Detail |
     |---|---|
@@ -768,8 +1122,8 @@ with tabs[5]:
     | Baseline | Logistic Regression |
     | Best Model | Random Forest (100 trees) |
     | Imbalance Handling | SMOTE |
-    | Explainability | SHAP TreeExplainer |
-    | UI Framework | Streamlit |
+    | Explainability | SHAP TreeExplainer (Global + Individual) |
+    | UI Framework | Streamlit + Plotly |
 
     ### Pipeline Modules
     | # | Module | Description |
@@ -784,7 +1138,7 @@ with tabs[5]:
     | 08 | RF | Random Forest training |
     | 09 | Eval | Model comparison & ROC curves |
     | 10 | SHAP | SHAP global explanations |
-    | 11 | App | This Streamlit UI |
+    | 11 | App | This Streamlit UI (Enhanced) |
     | 12 | Runner | Master script to run all modules |
 
     ### Run the full pipeline
@@ -792,4 +1146,11 @@ with tabs[5]:
     python 12_run_all.py
     streamlit run 11_app.py
     ```
+    
+    ### Interview Talking Points:
+    - "I implemented both **global and local explainability** using SHAP"
+    - "I built **interactive dashboards** with Plotly for better UX"
+    - "I created **risk-level gauges** that business users can understand"
+    - "I analyzed **feature distributions** to identify churn patterns"
+    - "I calculated **revenue at risk metrics** linking ML to business value"
     """)
