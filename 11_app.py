@@ -307,7 +307,12 @@ with tabs[1]:
     if available:
         for title, path in available.items():
             st.markdown(f"#### {title}")
-            st.image(path, width="stretch")
+            if title in ["Contract Type vs Churn", "Correlation Heatmap"]:
+                st.image(path, width=800)
+            elif title == 'SHAP Summary (Global)':
+                st.image(path, width=800)
+            else:
+                st.image(path, width='stretch')
             st.markdown("---")
     else:
         st.warning("No EDA plots found. Run `python 02_eda.py` first.")

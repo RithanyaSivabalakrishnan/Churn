@@ -25,9 +25,9 @@ palette = {"Yes": "#e74c3c", "No": "#2ecc71"}
 sns.set_theme(style="whitegrid", palette="muted")
 
 # ── Plot 1: Contract type vs Churn (saved as eda_tenure.png) ──────────────────
-fig, ax = plt.subplots(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(6, 4))
 sns.countplot(x="Contract", hue="Churn", data=df, palette=palette, ax=ax)
-ax.set_title("Churn by Contract Type", fontsize=14, fontweight="bold")
+ax.set_title("Churn by Contract Type", fontsize=12, fontweight="bold")
 ax.set_xlabel("Contract Type")
 ax.set_ylabel("Customer Count")
 ax.legend(title="Churn")
@@ -58,11 +58,11 @@ plt.close()
 print("  ✔  Saved: eda_charges.png  (MonthlyCharges & Tenure × Churn)")
 
 # ── Plot 3: Correlation heatmap ───────────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(6.5, 5))
 corr = df.corr(numeric_only=True)
 sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm",
             linewidths=0.5, ax=ax, square=True, cbar_kws={"shrink": 0.8})
-ax.set_title("Numeric Feature Correlation Heatmap", fontsize=13, fontweight="bold")
+ax.set_title("Numeric Feature Correlation Heatmap", fontsize=12, fontweight="bold")
 plt.tight_layout()
 plt.savefig("eda_heatmap.png", dpi=150)
 plt.close()
