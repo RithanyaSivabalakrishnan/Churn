@@ -21,7 +21,7 @@ print("=" * 60)
 print(f"\nOverall Churn Rate : {churn_rate:.2%}")
 
 # ── Palette ───────────────────────────────────────────────────────────────────
-palette = {"Yes": "#74b0d1", "No": "#09577b"}
+palette = {"Yes": "#9ad6f6", "No": "#0b5a7e"}
 sns.set_theme(style="whitegrid", palette="muted")
 
 # ── Plot 1: Contract type vs Churn (saved as eda_tenure.png) ──────────────────
@@ -60,7 +60,7 @@ print("  ✔  Saved: eda_charges.png  (MonthlyCharges & Tenure × Churn)")
 # ── Plot 3: Correlation heatmap ───────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(6.5, 5))
 corr = df.corr(numeric_only=True)
-sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm",
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="Blues_r",
             linewidths=0.5, ax=ax, square=True, cbar_kws={"shrink": 0.8})
 ax.set_title("Numeric Feature Correlation Heatmap", fontsize=12, fontweight="bold")
 plt.tight_layout()
