@@ -39,6 +39,13 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Custom title - LEFT ALIGNED
+st.markdown("""
+    <h1 style="text-align: left; color: white; margin-bottom: 30px; font-size: 2.5rem; margin-left: 20px;">
+    📞 Telco - Churn Predictor
+    </h1>
+""", unsafe_allow_html=True)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Custom CSS (Enhanced for Feature 2)
@@ -48,6 +55,13 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+
+/* HIDE DEFAULT HEADER */
+header[data-testid="stHeader"] {
+    visibility: hidden !important;
+    height: 0 !important;
+    display: none !important;
+}
 
 /* Sidebar gradient */
 [data-testid="stSidebar"] {
